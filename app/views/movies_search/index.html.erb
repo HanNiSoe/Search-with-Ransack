@@ -1,0 +1,158 @@
+<div class="container-xl my-5">
+    <h2 class="fw-bolder">Movies Search</h2>
+    <%= search_form_for(@search, url: movies_search_index_path, method: :get) do |f| %>
+        <!--begin::Search-->
+        <div class="card bg-light p-4 mt-2 mb-4">
+            <div class="row mb-4">
+                <div class="col-10 d-flex flex-nowrap text-nowrap">
+                    <div class="d-flex me-4">
+                        <span class="me-3 fw-bold pt-1">
+                            Keyword:
+                        </span> 
+                        <%= f.search_field :name_or_caption_or_director_or_movie_detail_producer_or_movie_songs_song_name_or_movie_songs_singer_name_cont, class: "form-control", placeholder: "Enter Keyword" %>
+                    </div>
+                    <div class="d-flex me-4">
+                        <span class="me-3 fw-bold pt-1 ">
+                            Movie Category:
+                        </span>
+                        <%= f.select :category_id_cont, options_from_collection_for_select(MovieCategory.all, "id", "name", @search.category_id_cont), include_blank: "Select Category",class: '' %>
+                    </div>
+                    <span class="me-3 fw-bold pt-1">
+                        Stock:
+                    </span>
+                    <div class="d-flex me-4 align-items-center border rounded px-2">
+                        <div class="form-check me-2">
+                            <%= f.radio_button :movie_detail_stock_true, "",{:class=>"form-check-input"} %>
+                            <%= f.label :movie_detail_stock_true, "All", value: "",class:"form-check-label" %>
+                        </div>
+                        <div class="form-check me-2">
+                            <%= f.radio_button :movie_detail_stock_true, true,{:class=>"form-check-input"} %>
+                            <%= f.label :movie_detail_stock_true, "In-Stock", value: "true",class:"form-check-label" %>
+                        </div>
+                        <div class="form-check">
+                            <%= f.radio_button :movie_detail_stock_true, false,{:class=>"form-check-input"} %>
+                            <%= f.label :movie_detail_stock_true, "Out-of-Stock", value: "false",class:"form-check-label" %>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-2 d-flex justify-content-end">
+                    <div class="d-grid gap-2 d-md-block">
+                        <%= f.submit "Search", class: "btn btn-md btn-primary px-4" %>
+                        <%= link_to "Clear", movies_search_index_path, class: "btn btn-md btn-secondary px-4" %>
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-4">
+                <div class="col-10 d-flex flex-nowrap text-nowrap">
+                    <div class="d-flex me-4">
+                        <span class="me-3 fw-bold pt-1 ">
+                            Price Range:
+                        </span> 
+                        <%= f.search_field :price_gteq, class: "form-control", placeholder: "Min Price", maxlength: 9 %>
+                        <span class="mx-2 fw-bold">...</span>
+                        <%= f.search_field :price_lteq, class: "form-control", placeholder: "Max Price", maxlength: 9 %>
+                    </div>
+                    <div class="d-flex me-4">
+                        <span class="me-3 fw-bold pt-1 ">
+                            Total Income Range:
+                        </span> 
+                        <%= f.search_field :movie_detail_total_income_gteq, class: "form-control", placeholder: "Min Income", maxlength: 9 %>
+                        <span class="mx-2 fw-bold">...</span>
+                        <%= f.search_field :movie_detail_total_income_lteq, class: "form-control", placeholder: "Max Income", maxlength: 9 %>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-10 d-flex flex-nowrap text-nowrap form-select-h">
+                    <div class="d-flex me-4">
+                        <span class="me-3 fw-bold pt-1">
+                            Released Year Range:
+                        </span> 
+                        <%= f.date_select :movie_detail_released_year_gteq, discard_month: true,start_year:1990,end_year:Date.today.year, prompt: "Select" %>
+                        <span class="mx-2 fw-bold">...</span>
+                        <%= f.date_select :movie_detail_released_year_lteq, discard_month: true,start_year:1990,end_year:Date.today.year, prompt: "Select" %>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--end::Search-->
+        <!--begin::SearchResultsSortLinks-->
+        <div class="d-flex justify-content-between">
+            <div>
+                <h4>Search Results</h4>
+                <h6><%= @results.total_count %> Items Found</h6>
+            </div>
+            <div>
+                <span class="fw-bold pe-2">Sort by:</span>
+                <%= sort_link(@search, :name, "Movie Name", default_order: :desc) %> | 
+                <%= sort_link(@search, :caption, "Caption", default_order: :desc) %> |
+                <%= sort_link(@search, :director, "Director Name", default_order: :desc) %> |
+                <%= sort_link(@search, :category_id, "Category", default_order: :desc) %> |
+                <%= sort_link(@search, :price, "Price", default_order: :desc) %> |
+                <%= sort_link(@search, :movie_detail_total_income, "Total Income", default_order: :desc) %> |
+                <%= sort_link(@search, :movie_detail_producer, "Producer", default_order: :desc) %> |
+                <%= sort_link(@search, :movie_detail_released_year, "Released Year", default_order: :desc) %> |
+                <%= sort_link(@search, :movie_detail_stock, "Stock", default_order: :desc) %>                
+            </div>
+        </div>
+        <!--end::SearchResultsSortLinks-->
+        <!--begin::SearchResults-->
+        <div class="row g-6 g-xl-9 mt-1">
+            <% @results.each do |movie| %>   
+                <div class="col-md-6 col-lg-12 col-xl-4 col-xxl-4">
+                    <div class="card bg-light mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="card-title fw-bolder"><%= movie.name %></h5>
+                                <% if movie.movie_detail.stock %>
+                                    <span class="badge rounded-pill bg-light-success">
+                                        in-stock
+                                    </span>
+                                <% else %>
+                                    <span class="badge rounded-pill bg-secondary">
+                                        out-of-stock
+                                    </span>
+                                <% end %>
+                            </div>
+                            <span class="badge bg-<%= get_badge_color(movie.category_id) %>"><%= get_category_name(movie.category_id) %></span>
+                            <p class="card-subtitle py-3 text-muted"><%= movie.caption %></p>
+                            <div class="d-flex justify-content-between">
+                                <div><span class="fw-bold">Released Year:</span> <%= movie.movie_detail.released_year.year %></div>
+                                <div><span class="fw-bold">Total Income:</span> $<%= movie.movie_detail.total_income %></div>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <div><span class="fw-bold">Directed by:</span> <%= movie.director %></div>
+                                <div><span class="fw-bold">Price:</span> $<%= movie.price %></div>
+                            </div>
+                            <div class="d-flex justify-content-start">
+                                <div><span class="fw-bold">Producer:</span> <%= movie.movie_detail.producer %></div>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-light">
+                            <h6 class="fw-bold">Ost Songs</h6>
+                            <% movie.movie_songs.each do |song| %>
+                                <div class="alert alert-secondary p-2">
+                                    <div><span class="fs-7">Song Name: </span><%= song.song_name %></div>
+                                    <div><span class="fs-7">Singer: </span><%= song.singer_name %></div>
+                                </div>
+                            <% end %>
+                        </div>
+                    </div>  
+                </div>
+            <% end %>
+        </div>
+        <!--end::SearchResults-->
+        <!--begin::Pagination-->
+        <div class="d-flex flex-wrap justify-content-between align-items-center">
+			<div class="d-flex flex-wrap py-2">
+				<%= paginate @results %>
+			</div>
+			<div class="d-flex align-items-center py-3">
+				<span class="text-muted">
+                    <%= page_entries_info @results, entry_name: 'result' %>
+                </span>
+			</div>
+		</div>
+        <!--end::Pagination-->
+    <% end %>
+</div>
